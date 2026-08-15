@@ -7,6 +7,33 @@ normal distribution to monthly crime counts.
 
 ---
 
+## 📊 Output
+
+**Monthly crime counts, August 2023 – July 2025**
+
+![Monthly crime trend](q1c_graph1_time.png)
+
+**Distribution by crime category**
+
+![Crime types by frequency](q1c_graph2_crime_types.png)
+
+---
+
+## 🧰 Tech stack
+
+| | Role |
+| :--- | :--- |
+| **pandas** | Reads and concatenates 24 monthly CSVs into a single frame |
+| **NumPy** | Numeric work underneath the aggregation |
+| **SciPy** (`stats.norm`) | Fits a normal distribution to monthly counts |
+| **matplotlib** | Renders the two charts above |
+| **zipfile** (stdlib) | Locates and extracts the source archive |
+
+No database and no notebook — it is a single script that goes from a zip file
+to two charts, so it can be run end to end in one command.
+
+---
+
 ## 🌟 What it does
 
 * 📦 **Archive handling** — locates the monthly `.zip`, extracts it, and walks
@@ -71,6 +98,44 @@ python "Crime Data Analysis & Knowledge Representation.py"
 
 Expect the first run to take a few minutes and roughly 1–2 GB of RAM — all 24
 months are held in memory at once before concatenation.
+
+---
+
+## ▶️ Usage
+
+There is nothing interactive — run the script and it works through the whole
+analysis in order, printing results and writing the charts to disk. It is
+organised as three sections that run in sequence:
+
+| Section | What it prints |
+| :--- | :--- |
+| **Q1a** — load & clean | Files found, months loaded, total row count |
+| **Q1b** — categories & LSOAs | Every crime type present; the LSOA with the most anti-social behaviour; the LSOA with the most bicycle theft in June 2024 |
+| **Q1c** — trends & modelling | Writes both charts, then prints an interpretation of each |
+
+To analyse a different force or date range, download that data from
+[data.police.uk](https://data.police.uk/data/) and drop the zip in this folder
+— the script does not hardcode the force. It **does** hardcode June 2024 for
+the bicycle-theft query, so that one returns nothing on a different range; see
+the limitations below.
+
+---
+
+## 🧠 Engineering decisions
+
+**Concatenate first, then analyse.** Every query runs against the full 2.3M-row
+frame rather than being computed per month and combined. That costs memory but
+keeps each answer to a single, readable groupby. At this size the trade is
+worth it; at ten years of data it would not be, and the fix is noted below.
+
+**Only the required columns are kept.** The source CSVs carry a dozen fields;
+loading all of them across 24 months was the difference between comfortable and
+swapping.
+
+**SciPy's fitted normal is presented as a model, not a finding.** The PDF is
+plotted over the observed counts so the two can be compared by eye. The README
+says plainly that normality was assumed rather than tested — that limitation is
+part of the result, not a footnote to hide.
 
 ---
 
